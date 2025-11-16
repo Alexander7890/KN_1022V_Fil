@@ -35,12 +35,61 @@
 
 ---
 
-## 2. Створення базового проєкту Laravel
+## 2. Швидке автоматичне налаштування
+
+У репозиторії є готові скрипти, які виконують **усі кроки** нижче:
+
+- `scripts/setup.sh` — для Linux/macOS;
+- `scripts/setup.ps1` — для Windows PowerShell (Core або Windows PowerShell 5+).
+
+Приклади запуску (у корені репозиторію):
+
+```bash
+# Linux / macOS
+./scripts/setup.sh contacts-app
+
+# Windows PowerShell
+pwsh ./scripts/setup.ps1 -TargetDir contacts-app
+```
+
+Скрипт:
+
+1. Створює чистий каркас Laravel 11 (`composer create-project`).
+2. Копіює кастомні каталоги (`app`, `routes`, `resources`, `database`).
+3. Підставляє `.env` із налаштованим SQLite (`.env.example`).
+4. Створює файл `database/database.sqlite` (якщо його ще нема).
+5. Запускає `php artisan key:generate`, `php artisan migrate`, `php artisan db:seed`.
+
+Після завершення достатньо перейти у вказану директорію та виконати `php artisan serve`.
+
+> Якщо хочете виконати всі кроки вручну — дотримуйтесь інструкцій нижче.
+
+---
+
+## 3. Створення базового проєкту Laravel
 
 ```bash
 composer create-project laravel/laravel contacts-app "11.*"
 cd contacts-app
 ```
+
+> 💡 **Якщо Composer повідомляє про відсутність `ext-fileinfo`, потрібно увімкнути
+> відповідне розширення PHP.**
+>
+> ### Windows (php.ini)
+> 1. Визначте файл конфігурації CLI: `php --ini`.
+> 2. Відкрийте зазначений `php.ini` та знайдіть рядок `;extension=fileinfo`.
+> 3. Приберіть крапку з комою (`extension=fileinfo`) і перезапустіть термінал.
+> 4. Перевірте, що розширення активне: `php -m | findstr fileinfo`.
+>
+> ### macOS / Linux
+> - Homebrew / apt / dnf: встановіть або активуйте пакет `php-fileinfo`
+>   (наприклад, `sudo apt install php-fileinfo`).
+> - Для збірок із `php.ini` також переконайтесь, що рядок `extension=fileinfo`
+>   не закоментований.
+>
+> Після увімкнення розширення перезапустіть команду `composer create-project` —
+> саме воно встановлює `vendor/` та створює `artisan`.
 
 Перевірка запуску "голого" проєкту:
 
@@ -53,7 +102,7 @@ php artisan serve
 
 ---
 
-## 3. Копіювання файлів з архіву
+## 4. Копіювання файлів з архіву
 
 1. Розпакуйте архів `contacts-app-laravel-sqlite.zip` у будь‑яку тимчасову папку.
 2. Всередині буде папка `contacts-app-sqlite/...`.
@@ -78,9 +127,11 @@ php artisan serve
 
 ---
 
-## 4. Налаштування SQLite у `.env`
+## 5. Налаштування SQLite у `.env`
 
-Відкрийте `.env` у корені проєкту та замініть блок із БД на:
+У корені проєкту вже є `.env.example` із налаштованим SQLite. Після запуску
+скрипта (або вручну скопіюйте `.env.example` у `.env`) переконайтесь, що блок БД
+має вигляд:
 
 ```env
 DB_CONNECTION=sqlite
@@ -110,7 +161,7 @@ touch database/database.sqlite       # Linux / macOS
 
 ---
 
-## 5. Міграції та сидери
+## 6. Міграції та сидери
 
 Виконайте:
 
@@ -128,7 +179,7 @@ php artisan db:seed
 
 ---
 
-## 6. Запуск застосунку
+## 7. Запуск застосунку
 
 ```bash
 php artisan serve
@@ -140,9 +191,16 @@ php artisan serve
 http://127.0.0.1:8000/contacts
 ```
 
+> **Поширена помилка (Windows/PowerShell):** URL не потрібно вводити як команду в
+> терміналі — так PowerShell видає `CommandNotFoundException`. Замість цього
+> відкрийте посилання у браузері (скопіюйте адресу в Chrome/Edge/Firefox). Якщо
+> хочете запустити браузер із терміналу, скористайтесь командами типу
+> `start http://127.0.0.1:8000/contacts` (PowerShell / CMD) або
+> `xdg-open http://127.0.0.1:8000/contacts` (Linux).
+
 ---
 
-## 7. Реалізований функціонал
+## 8. Реалізований функціонал
 
 ### 7.1. Сутності та зв’язки
 
