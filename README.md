@@ -26,12 +26,24 @@
 
 ## 1. Вимоги
 
-- PHP 8.2+
-- Composer
-- Laravel 11
-- Будь-який вебсервер (достатньо `php artisan serve`)
-- Редактор коду (VS Code / PhpStorm тощо)
+- PHP 8.2+ з увімкненими розширеннями `fileinfo`, `zip`, `pdo_sqlite` та `openssl`.
+- Composer 2.x.
+- Laravel 11 (встановлюється через `composer create-project`).
+- Будь-який вебсервер (достатньо `php artisan serve`).
+- Редактор коду (VS Code / PhpStorm тощо).
 - **Без MySQL** — використовується SQLite.
+
+> 🔧 **Як увімкнути відсутні розширення PHP (Windows):**
+> 1. Визначте, яке `php.ini` використовується, командою `php --ini`.
+> 2. Відкрийте цей файл і знайдіть рядки `;extension=fileinfo`, `;extension=zip`,
+>    `;extension=pdo_sqlite`.
+> 3. Приберіть крапку з комою на початку (`extension=fileinfo`).
+> 4. Збережіть файл і перезапустіть термінал. Перевірте, що розширення підвантажилося: `php -m | findstr fileinfo`.
+> 5. Повторіть запуск `composer`.
+
+Без `fileinfo` або `zip` Composer не зможе завантажити залежності і ви отримаєте помилку
+на кшталт: `league/flysystem-local require ext-fileinfo * -> it is missing from your system`. 
+Увімкнення розширень вирішує проблему.
 
 ---
 
@@ -41,6 +53,9 @@
 composer create-project laravel/laravel contacts-app "11.*"
 cd contacts-app
 ```
+
+> Якщо Composer повідомляє, що не може завантажити пакет через відсутність
+> розширення `fileinfo` / `zip`, поверніться до розділу «Вимоги» та увімкніть їх у `php.ini`.
 
 Перевірка запуску "голого" проєкту:
 
@@ -78,53 +93,58 @@ php artisan serve
 
 ---
 
-## 4. Налаштування SQLite у `.env`
+## 4. Налаштування `.env`
 
-Відкрийте `.env` у корені проєкту та замініть блок із БД на:
+1. Скопіюйте `.env.example` у `.env`, якщо цього ще не зроблено (`cp .env.example .env`).
+2. Згенеруйте APP_KEY (потрібно лише один раз):
 
-```env
-DB_CONNECTION=sqlite
-DB_DATABASE=database/database.sqlite
+   ```bash
+   php artisan key:generate
+   ```
 
-# ці змінні для sqlite не критичні, але можна залишити як є
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USERNAME=null
-DB_PASSWORD=null
-```
+3. Замініть блок налаштувань БД на конфігурацію SQLite:
 
-Також переконайтесь, що в `config/database.php` для зʼєднання `sqlite`
-використовується `database_path('database.sqlite')` (у Laravel 11 це так за замовчуванням).
+   ```env
+   DB_CONNECTION=sqlite
+   DB_DATABASE=database/database.sqlite
 
-У папці `database/` вже є **порожній файл** `database.sqlite`. Якщо його немає
-(або ви створюєте проєкт з нуля) — просто створіть порожній файл вручну:
+   # решта змінних для sqlite не критичні, але можна залишити як у прикладі
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_USERNAME=null
+   DB_PASSWORD=null
+   ```
 
-- у файловому менеджері — **New → Empty file → database.sqlite** у директорії `database/`,
-- або командою:
+4. Переконайтесь, що у `database/` існує **порожній файл** `database.sqlite`.
+   Якщо його немає — створіть вручну:
 
-```bash
-type NUL > database/database.sqlite   # Windows (PowerShell / cmd)
-# або
-touch database/database.sqlite       # Linux / macOS
-```
+   ```bash
+   type NUL > database/database.sqlite   # Windows (PowerShell / cmd)
+   # або
+   touch database/database.sqlite       # Linux / macOS
+   ```
 
 ---
 
 ## 5. Міграції та сидери
 
-Виконайте:
+1. Встановіть залежності (якщо ще не робили після `composer create-project`):
 
-```bash
-php artisan migrate
-php artisan db:seed
-```
+   ```bash
+   composer install
+   ```
 
-Це створить структуру таблиць в `database/database.sqlite`:
+2. Запустіть міграції та сидери:
 
-- `contact_groups`
-- `contacts`
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   ```
 
-та заповнить їх початковими даними.
+   Це створить структуру таблиць у `database/database.sqlite` та заповнить їх тестовими даними.
+
+> Якщо бачите помилку `Failed opening required vendor/autoload.php`, це означає,
+> що залежності не встановлено. Спочатку виконайте `composer install`.
 
 ---
 
@@ -193,3 +213,27 @@ http://127.0.0.1:8000/contacts
 5. Використовувати серверну валідацію форм.
 6. Побудувати інтерфейс на Blade‑шаблонах.
 7. Реалізувати пошук, фільтрацію та пагінацію.
+
+---
+
+## 9. Швидкий чекліст запуску (TL;DR)
+
+```bash
+# 1. Клон/розпакування архіву з користувацькими файлами не потрібні,
+#    якщо ви вже перебуваєте у готовому репозиторії.
+
+composer create-project laravel/laravel contacts-app "11.*"
+cd contacts-app
+# (скопіюйте файли з цього репозиторію поверх щойно створеного каркасу)
+
+cp .env.example .env
+php artisan key:generate
+
+# увімкніть fileinfo/zip/pdo_sqlite у php.ini, якщо Composer скаржиться
+
+composer install
+php artisan migrate --seed
+
+php artisan serve
+# відкрийте http://127.0.0.1:8000/contacts
+```
